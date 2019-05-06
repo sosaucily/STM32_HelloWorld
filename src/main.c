@@ -8,13 +8,20 @@
   ******************************************************************************
 */
 
-
 #include "stm32f7xx.h"
 #include "stm32746g_discovery.h"
-			
+
+/*
+ * What to do when an assertion fails
+ */
+void vAssertCalled(uint32_t ulLine, const char *pcFile){};
 
 int main(void)
 {
 
-	for(;;);
+  //1. Reset the RCC clock configuration
+  HAL_RCC_DeInit();
+
+  for (;;)
+    ;
 }
