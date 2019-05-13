@@ -1,4 +1,6 @@
 /Debug/
 .vscode
 .cproject
+segger_mem_dumps
+*.swp
 

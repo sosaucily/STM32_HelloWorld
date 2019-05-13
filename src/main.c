@@ -26,9 +26,11 @@ void vTask2_handler(void *params);
 extern void initialise_monitor_handles();
 #endif
 
-#define AVAILABLE = 1
-#define NOT_AVAILABLE = 0
-#define UART_ACCESS_KEY = AVAILABLE
+#define AVAILABLE 1
+#define NOT_AVAILABLE 0
+
+//Globals
+uint8_t UART_ACCESS_KEY = AVAILABLE;
 
 int main(void)
 {
@@ -36,7 +38,7 @@ int main(void)
   initialise_monitor_handles();
   printf("Using SemiHosting\n");
 #endif
-
+  DWT->CTRL |= (1 << 0); //Enable cyccnt (cycle counter) in DWT_CTL for segger timing
   //1. Reset the RCC clock configuration
   HAL_RCC_DeInit(); // Tutorial
 
@@ -45,12 +47,15 @@ int main(void)
   //2. Update the system core clock variable
   SystemCoreClockUpdate(); // Tutorial
 
-  init_GPIO_BSP_uart();
+//  init_GPIO_BSP_uart();
   // could also try init_uart(), but note this one modified uart_handle not uart for some reason
 
   // LCD_LOG_Init();
 
   // HAL_UART_Receive_IT(&uart_handle, *(char *)&buffer, 1); //in the case of USART we must do it once in the main before the callback - without this the first callback won't get signal
+
+  SEGGER_SYSVIEW_Conf();
+  SEGGER_SYSVIEW_Start();
 
   xTaskCreate(
       vTask1_handler,
@@ -103,18 +108,19 @@ void vTask1_handler(void *params)
       UART_ACCESS_KEY = AVAILABLE;
       taskYIELD();
     }
-  };
+  }
+}
 
-  void vTask2_handler(void *params)
+void vTask2_handler(void *params)
+{
+  while (1)
   {
-    while (1)
+    if (UART_ACCESS_KEY == AVAILABLE)
     {
-      if (UART_ACCESS_KEY == AVAILABLE)
-      {
-        UART_ACCESS_KEY = NOT_AVAILABLE;
-        printf("2\r\n");
-        UART_ACCESS_KEY = AVAILABLE;
-        taskYIELD();
-      }
+      UART_ACCESS_KEY = NOT_AVAILABLE;
+      printf("2\r\n");
+      UART_ACCESS_KEY = AVAILABLE;
+      taskYIELD();
     }
-  };
+  }
+}
